@@ -7,7 +7,7 @@ Mobile friendly PHP web app allowing people to create notification areas (places
 Coding was done to help focus check-ins, around activities like Surf Reports, Rental and Home Sales, Garage Sales and Meetups
 
 In order to Authenticate and generate Foursquare tokens you must add several key ZF2 modules.
-To do this install [Composer](http://www.esri.com/).  Before running the composer script to download
+To do this install [Composer](http://getcomposer.org/).  Before running the composer script to download
 this projects dependencies, that composer.json file looks like below. 
 
 
@@ -64,13 +64,13 @@ Make sure you run this composer script from the root of *this* cloned project (w
 * [twitter@esri](http://twitter.com/esri)
 
 
+## Screenshots
 
 [![Globebeta Geotrigger Notifications](http://dl.dropbox.com/u/77164369/hackathon2013.png "Globebeta Geotrigger Notifications")](http://dl.dropbox.com/u/77164369/hackathon2013.png)
 
 
 [![Globebeta Geotrigger Notifications](http://dl.dropbox.com/u/77164369/places.png "Globebeta Geotrigger Notifications")](http://dl.dropbox.com/u/77164369/places.png)
 
-## Screenshots
 
 [![Globebeta Geotrigger Notifications](
 http://dl.dropbox.com/u/77164369/splash.png "Globebeta Geotrigger Notifications")](
