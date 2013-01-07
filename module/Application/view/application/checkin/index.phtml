@@ -1,0 +1,140 @@
+
+<!--Each view is defined by a data-role="page" attribute-->
+<div data-role="page" id="mapPage"
+	style="width: 100%; margin-top: 75px; height: 100%; overflow: hidden;"
+	data-theme="b">
+	<div id="header" data-role="header">
+		<h1>Check-in Page</h1>
+
+		<a href="#featureDialog" data-role="button" class="ui-btn-right">Check-in!</a>
+	</div>
+	<div data-role="content" id="mapcontent"
+		style="padding: 0; width: 100%; height: 100%;">
+		<div id="map"></div>
+	</div>
+</div>
+<!--Attribute Insepctor Dialog-->
+<div data-role="page" id="attributeDialog" data-theme="b">
+	<div data-role="header" data-nobackbtn="true">
+		<h1>Collect</h1>
+	</div>
+	<div data-role="content" data-inset="true">
+		<div>
+			<div id="currentAddress"
+				style="font-weight: bold; text-align: center; width: 100%;"></div>
+		</div>
+		<div id="attributeDiv"></div>
+		<a href="#mapPage" data-role="button">Finish</a>
+	</div>
+</div>
+<!--Feature Collection Dialog-->
+<div data-role="page" id="featureDialog" data-theme="b">
+	<div data-role="header">
+		<h1>Feature Type</h1>
+	</div>
+	<div data-role="content">
+		<ul data-inset="true" data-role="listview" id="featureList"></ul>
+	</div>
+</div>
+
+<!--Checkin Forms Dialog-->
+<div data-role="page" id="streamsDialog" data-theme="b">
+	<div data-role="header">
+		<h1>Streams</h1>
+	</div>
+	<div data-role="content">
+		<ul data-inset="true" data-role="listview" id="featureList"></ul>
+	</div>
+</div>
+
+<div data-role="page" id="surfDialog" data-theme="b"
+	style="margin-top: 75px;">
+	<div data-role="header">
+		<h1>Surf Report</h1>
+	</div>
+	<div data-role="content">
+		<div class="ui-body ui-body-c">
+
+			<ul data-role="listview" data-inset="true">
+				<li data-role="list-divider">Wave Height</li>
+				<li style="padding: 0; border: 0;">
+					<div data-role="fieldcontain" style="margin: 0;">
+						<fieldset data-role="controlgroup">
+							<input type="radio" name="radio-choice-1" id="radio-choice-1"
+								value="choice-1" checked="checked" /> <label
+								for="radio-choice-1">Huge</label> <input type="radio"
+								name="radio-choice-1" id="radio-choice-2" value="choice-2" /> <label
+								for="radio-choice-2">Head High</label> <input type="radio"
+								name="radio-choice-1" id="radio-choice-3" value="choice-3" /> <label
+								for="radio-choice-3">Waist High</label> <input type="radio"
+								name="radio-choice-1" id="radio-choice-4" value="choice-4" /> <label
+								for="radio-choice-4">Flat</label>
+						</fieldset>
+					</div>
+				</li>
+			</ul>
+
+			<fieldset class="ui-grid-a">
+				<div data-role="fieldcontain">
+					<label for="textarea">Your message:</label>
+					<textarea cols="40" rows="8" name="textarea" id="textarea"></textarea>
+				</div>
+				<div class="ui-block-b">
+					<button type="submit" data-theme="a">Submit</button>
+				</div>
+			</fieldset>
+		</div>
+	</div>
+</div>
+
+<div data-role="page" id="rentDialog" data-theme="b" style="margin-top: 75px;">
+	<div data-role="header">
+		<h1>Rent or For Sale</h1>
+	</div>
+	<div data-role="content">
+		<fieldset class="ui-grid-a">
+			<div data-role="fieldcontain">
+				<label for="textarea">Your message:</label>
+				<textarea cols="40" rows="8" name="textarea" id="textarea"></textarea>
+			</div>
+			<div class="ui-block-b">
+				<button type="submit" data-theme="a">Submit</button>
+			</div>
+		</fieldset>
+	</div>
+</div>
+
+<div data-role="page" id="garageDialog" data-theme="b" style="margin-top: 75px;">
+	<div data-role="header">
+		<h1>Garage Sale</h1>
+	</div>
+	<div data-role="content">
+		<fieldset class="ui-grid-a">
+			<div data-role="fieldcontain">
+				<label for="textarea">Your message:</label>
+				<textarea cols="40" rows="8" name="textarea" id="textarea"></textarea>
+			</div>
+			<div class="ui-block-b">
+				<button type="submit" data-theme="a">Submit</button>
+			</div>
+		</fieldset>
+	</div>
+</div>
+
+<div data-role="page" id="meetupDialog" data-theme="b" style="margin-top: 75px;">
+	<div data-role="header">
+		<h1>Meet up</h1>
+	</div>
+	<div data-role="content">
+		<fieldset class="ui-grid-a">
+			<div data-role="fieldcontain">
+				<label for="textarea">Your message:</label>
+				<textarea cols="40" rows="8" name="textarea" id="textarea"></textarea>
+			</div>
+			<div class="ui-block-b">
+				<button type="submit" data-theme="a">Submit</button>
+			</div>
+		</fieldset>
+	</div>
+</div>
+

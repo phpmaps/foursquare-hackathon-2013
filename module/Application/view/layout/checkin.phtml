@@ -1,0 +1,422 @@
+<?php echo $this->doctype(); ?>
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+    <?php echo $this->headTitle('ZF2 '. $this->translate('Foursquare | Hackathon!!'))->setSeparator(' - ')->setAutoEscape(false)?>
+
+    <?php echo $this->headMeta()->appendName('viewport', 'width=device-width, initial-scale=1.0')?>
+
+    <!-- Le styles -->
+    <?php
+				
+				echo $this->headLink ( array (
+						'rel' => 'shortcut icon',
+						'type' => 'image/vnd.microsoft.icon',
+						'href' => $this->basePath () . '/images/favicon.ico' 
+				) )->prependStylesheet ( $this->basePath () . '/css/bootstrap-responsive.min.css' )->prependStylesheet ( $this->basePath () . '/css/style.css' )->prependStylesheet ( $this->basePath () . '/css/bootstrap.min.css' )?>
+
+    <!-- Scripts -->
+    <?php
+				
+				echo $this->headScript ()->prependFile ( $this->basePath () . '/js/html5.js', 'text/javascript', array (
+						'conditional' => 'lt IE 9' 
+				) )->prependFile ( $this->basePath () . '/js/jquery-1.7.2.min.js' )?>
+                                  
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=7, IE=9" />
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+
+
+    <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.2/js/dojo/dijit/themes/claro/claro.css" />
+    <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.2/js/esri/css/esri.css" />
+    
+    <!-- ArcGIS API for JavaScript -->
+    <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.2compact"></script>
+    <script src="http://code.jquery.com/jquery-1.5.2.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.0a4.1/jquery.mobile-1.0a4.1.min.js"></script>
+    
+    <style type="text/css">
+      #map {
+        width:100%;
+        height:100%;
+      }
+      .page-map #mapcontent, #map {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+      }
+    </style>
+    
+    <script type="text/javascript">
+      //initialize dojo
+      dojo.require("esri.map");
+      dojo.require("esri.dijit.AttributeInspector-all");
+      dojo.require("esri.tasks.locator");
+      dojo.require("dijit.form.ComboBox");
+      dojo.require("esri.dijit.PopupMobile");
+
+      dojo.addOnLoad(init);
+
+      var map;
+      var locator;
+      var citizenRequestLayer;
+
+
+      function init() {
+
+
+        //This sample requires a proxy page to handle communications with the ArcGIS Server services. You will need to
+        //replace the url below with the location of a proxy on your machine. See the 'Using the proxy page' help topic
+        //for details on setting up a proxy page.
+        esri.config.defaults.io.proxyUrl = "/arcgisserver/apis/javascript/proxy/proxy.ashx";
+
+
+        //define an initial extent (Seattle)
+        var initExtent = new esri.geometry.Extent({
+          "xmin": -13688438.95,
+          "ymin": 5939420.59,
+          "xmax": -13675616.64,
+          "ymax": 5949452.95,
+          "spatialReference": {
+            "wkid": 102100
+          }
+        });
+        var popup = new esri.dijit.PopupMobile(null, dojo.create("div"));
+
+        map = new esri.Map("map", {
+          extent: initExtent,
+          infoWindow: popup
+        });
+
+
+        //initialize the editor
+        dojo.connect(map, "onLayersAddResult", initEditor);
+        //onorientationchange doesn't always fire in a timely manner in Android so check for both orientationchange and resize 
+        var supportsOrientationChange = "onorientationchange" in window,
+          orientationEvent = supportsOrientationChange ? "orientationchange" : "resize";
+
+        window.addEventListener(orientationEvent, function () {
+          orientationChanged();
+        }, false);
+
+        dojo.connect(map, "onLoad", function () {
+
+          resizeMap();
+          //hookup jquery
+          $(document).ready(jQueryReady);
+        });
+
+        //add the world streetmap from arcgis online
+        var basemap = new esri.layers.ArcGISTiledMapServiceLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer");
+        map.addLayer(basemap);
+
+        //setup an info template to display basic info on requests (contact and date);
+        var template = new esri.InfoTemplate();
+        template.setTitle("<b>Request ${objectid}</b>");
+        template.setContent("<b>Date:</b> ${requestdate:DateFormat}<br/><b>Phone:</b>${phone:formatNumber}<br/><b>Name:</b>${name}");
+
+
+
+        //add the citizens request layer to the map as a feature layer
+        citizenRequestLayer = new esri.layers.FeatureLayer("http://sampleserver5.arcgisonline.com/ArcGIS/rest/services/LocalGovernment/CitizenRequests/FeatureServer/0", {
+          mode: esri.layers.FeatureLayer.MODE_ONDEMAND,
+          infoTemplate: template,
+          outFields: ["*"]
+        });
+
+        dojo.connect(citizenRequestLayer, "onClick", function (evt) {
+          map.infoWindow.setFeatures([evt.graphic]);
+        });
+
+        //setup the address locator
+        locator = new esri.tasks.Locator("http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Locators/ESRI_Geocode_USA/GeocodeServer");
+
+
+        map.addLayers([citizenRequestLayer]);
+
+        map.infoWindow.resize(185, 100);
+
+        getLocation();
+
+      }
+
+      function formatNumber(value, key, data) {
+        return "<a href='tel:" + data.phone + "'>" + data.phone + "</a>";
+      }
+
+      function initEditor(results) {
+
+ 
+var items = [{
+    'label': 'My Check In Streams',
+    'url': '/images/streams.png',
+    'dialog': '#streamsDialog'
+  }, {
+    'label': 'Surf Report',
+    'url': '/images/surf-128.png',
+    'dialog': '#surfDialog'
+  }, {
+	    'label': 'Rent or For Sale',
+	    'url': '/images/for-sale-for-rent-300x203.jpg',
+	    'dialog': '#rentDialog'
+  }, {
+	    'label': 'Garage Sale',
+	    'url': '/images/garage-sale.jpg',
+	    'dialog': '#garageDialog'
+  }, {
+	    'label': 'Meet Up',
+	    'url': '/images/meetup.png',
+	    'dialog': '#meetupDialog'
+  }];
+
+        //create the attribute inspector and customize the display
+        var layerInfo = [{
+          'featureLayer': citizenRequestLayer,
+          'showAttachments': false,
+          'showDeleteButton': false,
+          'isEditable': true,
+          'fieldInfos': [{
+            'fieldName': 'requesttype',
+            'label': 'Type',
+            'isEditable': true
+          }, {
+            'fieldName': 'name',
+            'label': 'Name',
+            'isEditable': true
+          }, {
+            'fieldName': 'phone',
+            'label': 'Phone',
+            'isEditable': true
+          }, {
+            'fieldName': 'email',
+            'label': 'Email',
+            'isEditable': true
+          }, {
+            'fieldName': 'comment',
+            'label': 'Comments',
+            'isEditable': true,
+            'stringFieldOption': esri.dijit.AttributeInspector.STRING_FIELD_OPTION_TEXTAREA
+          }]
+        }];
+
+        var attInspector = new esri.dijit.AttributeInspector({
+          layerInfos: layerInfo
+        }, "attributeDiv");
+
+        dojo.connect(attInspector, "onAttributeChange", function (feature, fieldName, newFieldValue) {
+          feature.attributes[fieldName] = newFieldValue;
+          feature.getLayer().applyEdits(null, [feature], null);
+        });
+
+        //dynamically create a pick list of renderer values
+        $.each(results, function (i, result) {
+          var infos = result.layer.renderer.infos;
+          $.each(items, function (j, info) {
+            var li = $('<li/>').bind('click', function (e) {
+              //looks like (one) prevents the double-click issue
+              map.setMapCursor('pointer');
+              addFeature(info.label);
+            }, false);
+            var content = [];
+            //create the list content
+            content.push("<img src='" + info.url + "'/>");
+            content.push("<a href=" + info.dialog + ">" + info.label + "</a>");
+            li.append(content.join(""));
+            //add the list item to the feature type list
+            $('#featureList').append(li);
+          });
+        });
+        //refresh the featurelist so the jquery mobile style is applied
+        $('#featureList').listview();
+        $('#featureList').listview('refresh');
+
+
+      }
+
+
+
+      function getType(item) {
+        var returnType = null;
+        $.each(citizenRequestLayer.types, function (index, type) {
+          if (type.name === item) {
+            returnType = type.templates[0];
+          }
+        });
+        return returnType;
+
+
+      }
+
+      function addFeature(item) {
+        map.setMapCursor('default');
+        //setup the template and display the attributes window
+        var itemTemplate = getType(item);
+
+        //setup the click event to capture a feature then display the attribute dialog
+        var mapclickHandler = dojo.connect(map, 'onClick', function (evt) {
+          //only capture one click
+          dojo.disconnect(mapclickHandler);
+
+
+          //set the default date and the click geometry
+          var currentDate = new Date();
+
+
+          var newAttributes = dojo.mixin({}, itemTemplate.prototype.attributes);
+          newAttributes.requestdate = Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate(), currentDate.getUTCHours(), currentDate.getUTCMinutes(), currentDate.getUTCSeconds(), 0);
+          var newGraphic = new esri.Graphic(evt.mapPoint, null, newAttributes);
+
+
+          citizenRequestLayer.applyEdits([newGraphic], null, null, function (adds) {
+            var query = new esri.tasks.Query();
+            var res = adds[0];
+            query.objectIds = [res.objectId];
+
+            citizenRequestLayer.queryFeatures(query, function (result) {
+
+              if (result.features.length > 0) {
+                var feat = result.features[0];
+                var pt = esri.geometry.webMercatorToGeographic(feat.geometry);
+
+                locator.locationToAddress(pt, 100, function (candidate) {
+
+                  var address = [];
+                  var displayAddress;
+                  if (candidate.address) {
+                    if (candidate.address.Address) {
+                      address.push(candidate.address.Address);
+                    }
+                    if (candidate.address.City) {
+                      address.push(candidate.address.City + ",");
+                    }
+                    if (candidate.address.State) {
+                      address.push(candidate.address.State);
+                    }
+                    if (candidate.address.Zip) {
+                      address.push(candidate.address.Zip);
+                    }
+                    displayAddress = address.join(" ");
+
+                  } else {
+                    displayAddress = 'No address for this location';
+                  }
+                  //display the geocoded address on the attribute dialog.
+                  $.mobile.changePage("#attributeDialog", null, true, true);
+                  $('#currentAddress')[0].textContent = displayAddress;
+                });
+              }
+            });
+
+
+
+          });
+
+
+        });
+
+      }
+      //use the geolocation api to get the current location
+      function getLocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(zoomToLocation, locationError);
+        }
+      }
+
+      function locationError(error) {
+        switch (error.code) {
+        case error.PERMISSION_DENIED:
+          console.log("Location not provided");
+          break;
+        case error.POSITION_UNAVAILABLE:
+          console.log("Current location not available");
+          break;
+        case error.TIMEOUT:
+          console.log("Timeout");
+          break;
+        default:
+          console.log("unknown error");
+          break;
+        }
+      }
+
+      function zoomToLocation(location) {
+
+        var pt = esri.geometry.geographicToWebMercator(new esri.geometry.Point(location.coords.longitude, location.coords.latitude));
+        var symbol = new esri.symbol.PictureMarkerSymbol('https://geoloqi.com/geoloqi-core/assets/img/logo-block.544404.png', 30, 30);
+        graphic = new esri.Graphic(pt, symbol);
+        map.graphics.add(graphic);
+        map.centerAndZoom(pt, 22);
+
+      }
+
+      function jQueryReady() {
+        $('#mapPage').bind('pageshow', function (event, ui) {
+          resizeMap();
+        });
+
+
+
+      }
+
+      function orientationChanged() {
+        if (map) {
+          resizeMap();
+        }
+      }
+
+      function resizeMap() {
+        if (map) {
+          $('#map').css("height", screen.height);
+          $('#map').css("width", "auto");
+
+          map.reposition();
+          map.resize();
+        }
+      }
+    </script>
+<link rel="stylesheet"  href="css/jquery.mobile.css" />
+</head>
+
+<body>
+
+	<div class="navbar navbar-fixed-top">
+		<div class="navbar-inner">
+			<div class="container">
+				<a class="btn btn-navbar" data-toggle="collapse"
+					data-target=".nav-collapse"> <span class="icon-bar"></span> <span
+					class="icon-bar"></span> <span class="icon-bar"></span>
+				</a> 
+				<span class="brand"><?php echo $this->translate('Get behind this!') ?></span>
+				
+				<div class="nav-collapse">
+					<ul class="nav">
+<li><a href="<?php echo $this->url('home') ?>"><?php echo $this->translate('Home') ?></a></li>
+               <li><a href="<?php echo $this->url('places') ?>"><?php echo $this->translate('Places') ?></a></li>
+                <li class="active"><a href="<?php echo $this->url('checkin') ?>"><?php echo $this->translate('Checkin')?></a></li>
+                 <li><a href="<?php echo $this->url('profile') ?>"><?php echo $this->translate('Profile')?></a></li>
+					</ul>
+				</div>
+				<!--/.nav-collapse -->
+			</div>
+		</div>
+	</div>
+
+	<div class="container">
+
+      <?php echo $this->content; ?>
+
+      <hr>
+
+		<footer>
+			<p>&copy; Doogs hacking away remotely for the Foursquare Hackathon!  <?php echo $this->translate('Go Geoloqi and Esri!') ?></p>
+		</footer>
+
+	</div>
+	<!-- /container -->
+
+  <?php echo $this->inlineScript()?>
+  </body>
+</html>
